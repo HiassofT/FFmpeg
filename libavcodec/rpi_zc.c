@@ -1,7 +1,6 @@
 #include "config.h"
 
 #include "avcodec.h"
-#include "internal.h"
 #include "rpi_mem.h"
 #include "rpi_mailbox.h"
 #include "rpi_zc.h"
@@ -1163,7 +1162,7 @@ static int zc_get_buffer2(struct AVCodecContext *s, AVFrame *frame, int flags)
     else if (frame->format == AV_PIX_FMT_YUV420P ||
              av_rpi_is_sand_frame(frame))
     {
-        if ((rv = av_rpi_zc_get_buffer(s->internal->zc_env, frame)) == 0)
+        if ((rv = av_rpi_zc_get_buffer(s->zc_env, frame)) == 0)
             rv = av_rpi_zc_resolve_frame(frame, ZC_RESOLVE_ALLOC_VALID);
     }
     else
@@ -1205,7 +1204,7 @@ int av_rpi_zc_init2(struct AVCodecContext * const s,
         .thread_safe_callbacks = s->thread_safe_callbacks
     };
 
-    s->internal->zc_env = zc;
+    s->zc_env = zc;
     s->get_buffer2 = zc_get_buffer2;
     s->thread_safe_callbacks = 1;
     return 0;
@@ -1213,12 +1212,12 @@ int av_rpi_zc_init2(struct AVCodecContext * const s,
 
 void av_rpi_zc_uninit2(struct AVCodecContext * const s)
 {
-    ZcEnv * const zc = s->internal->zc_env;
+    ZcEnv * const zc = s->zc_env;
 
     av_assert0(av_rpi_zc_in_use(s));
 
     s->get_buffer2 = zc->old.get_buffer2;
-    s->internal->zc_env = NULL;
+    s->zc_env = NULL;
     s->thread_safe_callbacks = zc->old.thread_safe_callbacks;
 
     av_rpi_zc_env_release(zc);

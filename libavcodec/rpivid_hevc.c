@@ -1777,7 +1777,7 @@ static int rpivid_hevc_alloc_frame(AVCodecContext * avctx, AVFrame *frame)
 
     if (av_rpi_zc_in_use(avctx))
     {
-        const AVZcEnvPtr zc = avctx->internal->zc_env;
+        const AVZcEnvPtr zc = avctx->zc_env;
         av_rpi_zc_set_decoder_pool_size(zc, pool_req);
         av_rpi_zc_get_buffer(zc, frame);   // get_buffer2 would alloc
     }
