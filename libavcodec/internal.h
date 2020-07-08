@@ -196,6 +196,8 @@ typedef struct AVCodecInternal {
     int initial_sample_rate;
     int initial_channels;
     uint64_t initial_channel_layout;
+
+    void * zc_env;
 } AVCodecInternal;
 
 struct AVCodecDefault {

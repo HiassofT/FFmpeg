@@ -191,7 +191,8 @@ static attribute_align_arg void *frame_worker_thread(void *arg)
 
         /* if the previous thread uses hwaccel then we take the lock to ensure
          * the threads don't run concurrently */
-        if (avctx->hwaccel) {
+        if (avctx->hwaccel &&
+            !(avctx->hwaccel->caps_internal & HWACCEL_CAP_MT_SAFE)) {
             pthread_mutex_lock(&p->parent->hwaccel_mutex);
             p->hwaccel_serializing = 1;
         }
@@ -336,6 +337,7 @@ static int update_context_from_user(AVCodecContext *dst, AVCodecContext *src)
 
     dst->draw_horiz_band= src->draw_horiz_band;
     dst->get_buffer2    = src->get_buffer2;
+    dst->zc_env         = src->zc_env;
 
     dst->opaque   = src->opaque;
     dst->debug    = src->debug;
@@ -614,7 +616,9 @@ void ff_thread_finish_setup(AVCodecContext *avctx) {
 
     if (!(avctx->active_thread_type&FF_THREAD_FRAME)) return;
 
-    if (avctx->hwaccel && !p->hwaccel_serializing) {
+    if (avctx->hwaccel &&
+        !(avctx->hwaccel->caps_internal & HWACCEL_CAP_MT_SAFE) &&
+        !p->hwaccel_serializing) {
         pthread_mutex_lock(&p->parent->hwaccel_mutex);
         p->hwaccel_serializing = 1;
     }
